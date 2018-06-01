@@ -5,5 +5,7 @@
         public string Path { get; set; }
 
         public string CustomCssUrl { get; set; }
+
+        public bool EnableAuthentication { get; set; }
     }
 }

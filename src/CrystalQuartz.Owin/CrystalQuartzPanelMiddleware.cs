@@ -14,6 +14,7 @@
     public class CrystalQuartzPanelMiddleware : OwinMiddleware
     {
         private readonly RunningApplication _runningApplication;
+        private CrystalQuartzOptions options;
 
         public CrystalQuartzPanelMiddleware(
             OwinMiddleware next, 
@@ -24,7 +25,7 @@
                 schedulerProvider,
                 new DefaultSchedulerDataProvider(schedulerProvider), 
                 options);
-
+            this.options = options;
             _runningApplication = application.Run();
         }
 
@@ -32,8 +33,21 @@
         {
             IRequest owinRequest = new OwinRequest(context.Request.Query, await context.Request.ReadFormAsync());
             IResponseRenderer responseRenderer = new OwinResponseRenderer(context);
-
-            _runningApplication.Handle(owinRequest, responseRenderer);
+            if (options.EnableAuthentication )
+            {
+                if (context.Authentication.User.Identity.IsAuthenticated)
+                {
+                    _runningApplication.Handle(owinRequest, responseRenderer);
+                }
+                else
+                {
+                   await context.Response.WriteAsync("You can't access CrystalQuartz.");
+                }
+            }
+            else
+            {
+                _runningApplication.Handle(owinRequest, responseRenderer);
+            }
         }
     }
 }
